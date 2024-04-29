@@ -6,26 +6,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "comments")
-public class Comment {
+@Table(name = "group_participations")
+public class GroupParticipation {
     @Id
-    @Column(name = "comment_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "participation_id")
     @Setter(AccessLevel.NONE)
-    private UUID id;
-    @Column(columnDefinition = "text")
-    private String content;
-    @Column(name = "image_url")
-    private String imageUrl;
+    private long id;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
+    @JoinColumn(name = "group_id")
+    private Group group;
+    private boolean isAdmin;
+    private boolean isBanned;
 }
