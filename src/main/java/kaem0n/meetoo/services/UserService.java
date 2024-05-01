@@ -63,7 +63,7 @@ public class UserService {
         return ud.save(found);
     }
 
-    public GenericResponseDTO updateEmail(UUID id, UserEmailChangeDTO payload) {
+    public GenericResponseDTO changeEmail(UUID id, UserEmailChangeDTO payload) {
         User found = this.findById(id);
 
         if (ud.existsByEmail(payload.email()) && !Objects.equals(found.getEmail(), payload.email())) throw new BadRequestException("Email " + payload.email() + " is already being used.");
@@ -74,7 +74,7 @@ public class UserService {
         return new GenericResponseDTO("Email successfully changed.");
     }
 
-    public GenericResponseDTO updateUsername(UUID id, UserUsernameChangeDTO payload) {
+    public GenericResponseDTO changeUsername(UUID id, UserUsernameChangeDTO payload) {
         User found = this.findById(id);
 
         if (ud.existsByUsername(payload.username()) && !Objects.equals(found.getUsername(), payload.username())) throw new BadRequestException("Username " + payload.username() + " is not available.");
@@ -85,7 +85,7 @@ public class UserService {
         return new GenericResponseDTO("Username successfully changed.");
     }
 
-    public GenericResponseDTO updatePassword(UUID id, UserPasswordChangeDTO payload) {
+    public GenericResponseDTO changePassword(UUID id, UserPasswordChangeDTO payload) {
         User found = this.findById(id);
 
         if (Objects.equals(found.getPassword(), payload.oldPassword())) found.setPassword(payload.newPassword());
