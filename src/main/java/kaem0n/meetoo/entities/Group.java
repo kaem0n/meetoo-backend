@@ -31,7 +31,7 @@ public class Group {
     @JoinColumn(name = "user_id")
     private User founder;
     @OneToMany(mappedBy = "group")
-    private List<GroupParticipation> participations;
+    private List<GroupMembership> memberships;
 
     public Group(String name, String description, User founder) {
         this.name = name;

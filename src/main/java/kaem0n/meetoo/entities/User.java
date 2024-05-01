@@ -43,7 +43,7 @@ public class User {
     @JoinColumn(name = "board_id")
     private Board board;
     @OneToMany(mappedBy = "user")
-    private List<GroupParticipation> participations;
+    private List<GroupMembership> memberships;
     @ManyToMany(mappedBy = "commentLikes")
     private List<Comment> likedComments;
     @ManyToMany(mappedBy = "postLikes")

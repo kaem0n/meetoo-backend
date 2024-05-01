@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "group_participations")
-public class GroupParticipation {
+@Table(name = "group_memberships")
+public class GroupMembership {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "participation_id")
@@ -25,11 +25,13 @@ public class GroupParticipation {
     private Group group;
     private boolean isAdmin;
     private boolean isBanned;
+    private boolean isFollowing;
 
-    public GroupParticipation(User user, Group group) {
+    public GroupMembership(User user, Group group) {
         this.user = user;
         this.group = group;
         this.isAdmin = user == group.getFounder();
         this.isBanned = false;
+        this.isFollowing = true;
     }
 }
