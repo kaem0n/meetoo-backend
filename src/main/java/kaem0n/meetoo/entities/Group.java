@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "groups")
-@JsonIgnoreProperties({"board", "memberships"})
+@JsonIgnoreProperties({"memberships"})
 public class Group {
     @Id
     @Column(name = "group_id")

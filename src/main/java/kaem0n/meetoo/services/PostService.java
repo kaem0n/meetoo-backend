@@ -1,18 +1,22 @@
 package kaem0n.meetoo.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.Post;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.post.PostContentEditDTO;
-import kaem0n.meetoo.payloads.post.PostMediaEditDTO;
-import kaem0n.meetoo.payloads.post.PostWithMediaCreationDTO;
-import kaem0n.meetoo.payloads.post.SimplePostCreationDTO;
+import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.PostDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,17 +27,23 @@ public class PostService {
     private BoardDAO bd;
     @Autowired
     private UserService us;
+    @Autowired
+    private Cloudinary c;
 
-    public Board findBoard(UUID id) {
+    private Board findBoard(UUID id) {
         return bd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public Post createSimplePost(SimplePostCreationDTO payload) {
-        return pd.save(new Post(payload.content(), us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
-    }
-
-    public Post createPostWithMedia(PostWithMediaCreationDTO payload) {
-        return pd.save(new Post(payload.content(), payload.mediaUrls(), us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
+    public Post createPost(PostCreationDTO payload, List<MultipartFile> files) throws IOException {
+        if (files == null) return pd.save(new Post(payload.content(), us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
+        else {
+            List<String> mediaUrls = new ArrayList<>();
+            for (MultipartFile file : files) {
+                String url = (String) c.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
+                mediaUrls.add(url);
+            }
+            return pd.save(new Post(payload.content(), mediaUrls, us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
+        }
     }
 
     public Post findById(UUID id) {
@@ -48,10 +58,16 @@ public class PostService {
         return pd.save(found);
     }
 
-    public Post editPostMedia(UUID id, PostMediaEditDTO payload) {
+    public Post editPostMedia(UUID id, List<MultipartFile> files) throws IOException {
         Post found = this.findById(id);
 
-        found.setMediaUrls(payload.mediaUrls());
+        List<String> mediaUrls = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String url = (String) c.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
+            mediaUrls.add(url);
+        }
+
+        found.setMediaUrls(mediaUrls);
 
         return pd.save(found);
     }

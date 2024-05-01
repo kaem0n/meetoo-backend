@@ -18,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@JsonIgnoreProperties({"password", "permissions", "board", "memberships", "likedComments", "likedPosts"})
+@JsonIgnoreProperties({"password", "permissions",  "memberships", "likedComments", "likedPosts"})
 public class User {
     @Id
     @Column(name = "user_id")
