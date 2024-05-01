@@ -37,5 +37,6 @@ public class Group {
         this.name = name;
         this.description = description;
         this.founder = founder;
+        this.creation = LocalDate.now();
     }
 }

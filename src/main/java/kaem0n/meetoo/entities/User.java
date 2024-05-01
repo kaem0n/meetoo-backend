@@ -36,8 +36,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserGender gender;
     private String occupation;
-    @Column(name = "about_me", columnDefinition = "text")
-    private String aboutMe;
+    @Column(columnDefinition = "text")
+    private String bio;
     private List<String> hobbies;
     @ManyToOne
     @JoinColumn(name = "board_id")
