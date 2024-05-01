@@ -124,7 +124,7 @@ public class GroupService {
         return new GenericResponseDTO(user.getUsername() + " has been unbanned from the group.");
     }
 
-    public GenericResponseDTO enterGroup(UUID userID, UUID groupID) {
+    public GenericResponseDTO joinGroup(UUID userID, UUID groupID) {
         User user = us.findById(userID);
         Group group = this.findById(groupID);
         GroupMembership userMembership = gmd.save(new GroupMembership(user, group));
