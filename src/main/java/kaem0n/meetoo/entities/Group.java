@@ -24,7 +24,7 @@ public class Group {
     @Column(columnDefinition = "text")
     private String description;
     private LocalDate creation;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
     @ManyToOne

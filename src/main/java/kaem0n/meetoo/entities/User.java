@@ -39,7 +39,7 @@ public class User {
     @Column(columnDefinition = "text")
     private String bio;
     private List<String> hobbies;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
     @OneToMany(mappedBy = "user")

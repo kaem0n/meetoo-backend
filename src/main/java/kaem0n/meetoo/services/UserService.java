@@ -1,11 +1,13 @@
 package kaem0n.meetoo.services;
 
+import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.user.*;
+import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,11 +24,18 @@ import java.util.UUID;
 public class UserService {
     @Autowired
     private UserDAO ud;
+    @Autowired
+    private BoardDAO bd;
 
     public User register(UserRegistrationDTO payload) {
         if (ud.existsByEmail(payload.email())) throw new BadRequestException("Email " + payload.email() + " is already being used.");
         else if (ud.existsByUsername(payload.username())) throw new BadRequestException("Username " + payload.username() + " is not available.");
-        else return ud.save(new User(payload.email(), payload.username(), payload.password()));
+        else {
+            User newUser = ud.save(new User(payload.email(), payload.username(), payload.password()));
+            Board board = bd.save(new Board());
+            newUser.setBoard(board);
+            return ud.save(newUser);
+        }
     }
 
     public User findById(UUID id) {
@@ -88,6 +97,7 @@ public class UserService {
 
     public GenericResponseDTO delete(UUID id) {
         User found = this.findById(id);
+        bd.delete(found.getBoard());
         ud.delete(found);
 
         return new GenericResponseDTO("User ID '" + id + "' account permanently deleted.");
