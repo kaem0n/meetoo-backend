@@ -31,4 +31,9 @@ public class Post {
     private Board board;
     @OneToMany(mappedBy = "post")
     private List<Comment> comments;
+    @ManyToMany
+    @JoinTable(name = "post_likes",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> postLikes;
 }

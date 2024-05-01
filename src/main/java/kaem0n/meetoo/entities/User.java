@@ -44,4 +44,8 @@ public class User {
     private Board board;
     @OneToMany(mappedBy = "user")
     private List<GroupParticipation> participations;
+    @ManyToMany(mappedBy = "commentLikes")
+    private List<Comment> likedComments;
+    @ManyToMany(mappedBy = "postLikes")
+    private List<Post> likedPosts;
 }
