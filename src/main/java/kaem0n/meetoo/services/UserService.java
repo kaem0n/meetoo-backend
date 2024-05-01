@@ -95,8 +95,9 @@ public class UserService {
         return new GenericResponseDTO("Password successfully changed.");
     }
 
-    public GenericResponseDTO delete(UUID id) {
+    public GenericResponseDTO deleteAccount(UUID id) {
         User found = this.findById(id);
+
         bd.delete(found.getBoard());
         ud.delete(found);
 
