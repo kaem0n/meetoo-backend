@@ -40,23 +40,13 @@ public class GroupController {
     }
 
     @PatchMapping("/{groupID}/promote")
-    public GenericResponseDTO promoteUser(@RequestParam UUID founderID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.promoteUser(founderID, userID, groupID);
-    }
-
-    @PatchMapping("/{groupID}/degrade")
-    public GenericResponseDTO degradeUser(@RequestParam UUID founderID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.degradeUser(founderID, userID, groupID);
+    public GenericResponseDTO handlePromotion(@RequestParam UUID founderID, @RequestParam UUID userID, @PathVariable UUID groupID) {
+        return gs.handlePromotion(founderID, userID, groupID);
     }
 
     @PatchMapping("/{groupID}/ban")
-    public GenericResponseDTO banUser(@RequestParam UUID adminID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.banUser(adminID, userID, groupID);
-    }
-
-    @PatchMapping("/{groupID}/unban")
-    public GenericResponseDTO unbanUser(@RequestParam UUID adminID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.unbanUser(adminID, userID, groupID);
+    public GenericResponseDTO handleBan(@RequestParam UUID adminID, @RequestParam UUID userID, @PathVariable UUID groupID) {
+        return gs.handleBan(adminID, userID, groupID);
     }
 
     @PatchMapping("/{groupID}/join")
