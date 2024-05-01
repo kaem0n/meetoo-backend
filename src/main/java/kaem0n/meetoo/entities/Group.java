@@ -32,4 +32,10 @@ public class Group {
     private User founder;
     @OneToMany(mappedBy = "group")
     private List<GroupParticipation> participations;
+
+    public Group(String name, String description, User founder) {
+        this.name = name;
+        this.description = description;
+        this.founder = founder;
+    }
 }

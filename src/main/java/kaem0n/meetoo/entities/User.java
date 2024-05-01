@@ -48,4 +48,14 @@ public class User {
     private List<Comment> likedComments;
     @ManyToMany(mappedBy = "postLikes")
     private List<Post> likedPosts;
+
+    public User(String email, String username, String password) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.permissions = UserPermissions.USER;
+        this.registration = LocalDate.now();
+        this.proPicUrl = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
+        this.gender = UserGender.UNDEFINED;
+    }
 }

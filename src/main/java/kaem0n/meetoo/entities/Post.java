@@ -36,4 +36,19 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> postLikes;
+
+    // POST WITHOUT MEDIA
+    public Post(String content, User user, Board board) {
+        this.content = content;
+        this.user = user;
+        this.board = board;
+    }
+
+    // POST WITH MEDIA
+    public Post(String content, List<String> mediaUrls, User user, Board board) {
+        this.content = content;
+        this.mediaUrls = mediaUrls;
+        this.user = user;
+        this.board = board;
+    }
 }
