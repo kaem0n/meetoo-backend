@@ -1,5 +1,6 @@
 package kaem0n.meetoo.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "groups")
+@JsonIgnoreProperties({"board", "memberships"})
 public class Group {
     @Id
     @Column(name = "group_id")

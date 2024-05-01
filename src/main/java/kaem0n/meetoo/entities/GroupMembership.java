@@ -14,7 +14,7 @@ import lombok.Setter;
 public class GroupMembership {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "participation_id")
+    @Column(name = "membership_id")
     @Setter(AccessLevel.NONE)
     private long id;
     @ManyToOne
