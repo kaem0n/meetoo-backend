@@ -5,10 +5,12 @@ import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.exceptions.NotFoundException;
+import kaem0n.meetoo.exceptions.UnauthorizedException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.user.*;
 import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.UserDAO;
+import kaem0n.meetoo.security.JWTTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,8 @@ public class UserService {
     private BoardDAO bd;
     @Autowired
     private PasswordEncoder bcrypt;
+    @Autowired
+    private JWTTools tools;
 
     public User register(UserRegistrationDTO payload) {
         if (ud.existsByEmail(payload.email())) throw new BadRequestException("Email " + payload.email() + " is already being used.");
@@ -41,8 +45,18 @@ public class UserService {
         }
     }
 
+    public UserLoginResponseDTO login(UserLoginDTO payload) {
+        User found = this.findByUsername(payload.username());
+        if (bcrypt.matches(payload.password(), found.getPassword())) return new UserLoginResponseDTO(tools.createToken(found));
+        else throw new UnauthorizedException("Invalid credentials, try again.");
+    }
+
     public User findById(UUID id) {
         return ud.findById(id).orElseThrow(() -> new NotFoundException(id));
+    }
+
+    public User findByUsername(String username) {
+        return ud.findByUsername(username).orElseThrow(() -> new NotFoundException("Invalid username."));
     }
 
     public Page<User> findAll(int page, int size, String sort) {
@@ -91,7 +105,7 @@ public class UserService {
     public GenericResponseDTO changePassword(UUID id, UserPasswordChangeDTO payload) {
         User found = this.findById(id);
 
-        if (Objects.equals(bcrypt.encode(found.getPassword()), bcrypt.encode(payload.oldPassword()))) found.setPassword(bcrypt.encode(payload.newPassword()));
+        if (bcrypt.matches(found.getPassword(), payload.oldPassword())) found.setPassword(bcrypt.encode(payload.newPassword()));
 
         ud.save(found);
 
