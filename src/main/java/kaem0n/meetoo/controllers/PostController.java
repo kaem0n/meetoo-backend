@@ -1,12 +1,20 @@
 package kaem0n.meetoo.controllers;
 
 import kaem0n.meetoo.entities.Post;
+import kaem0n.meetoo.entities.User;
+import kaem0n.meetoo.enums.UserPermissions;
+import kaem0n.meetoo.exceptions.BadRequestException;
+import kaem0n.meetoo.exceptions.UnauthorizedException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.post.PostContentEditDTO;
 import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,29 +29,52 @@ public class PostController {
     private PostService ps;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Post findById(@PathVariable UUID id) {
         return ps.findById(id);
     }
 
     @PostMapping("/media")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Post createPost(@RequestBody PostCreationDTO payload, @RequestParam(value = "media", required = false) List<MultipartFile> files) throws IOException {
-        return ps.createPost(payload, files);
+    public Post createPost(@Validated @RequestBody PostCreationDTO payload,
+                           @RequestParam(value = "media", required = false) List<MultipartFile> files,
+                           BindingResult validation) throws IOException {
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else return ps.createPost(payload, files);
     }
 
     @PatchMapping("/{id}")
-    public Post editPostContent(@PathVariable UUID id, @RequestBody PostContentEditDTO payload) {
-        return ps.editPostContent(id, payload);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Post editPostContent(@PathVariable UUID id,
+                                @Validated @RequestBody PostContentEditDTO payload,
+                                BindingResult validation,
+                                @AuthenticationPrincipal User currentAuthenticatedUser) {
+        Post post = ps.findById(id);
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
+            return ps.editPostContent(id, payload);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @PatchMapping("/{id}/media")
-    public Post editPostMedia(@PathVariable UUID id, @RequestParam("media") List<MultipartFile> files) throws IOException {
-        return ps.editPostMedia(id, files);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Post editPostMedia(@PathVariable UUID id,
+                              @RequestParam("media") List<MultipartFile> files,
+                              @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+        Post post = ps.findById(id);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
+            return ps.editPostMedia(id, files);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public GenericResponseDTO deletePost(@PathVariable UUID id) {
-        return ps.deletePost(id);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO deletePost(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+        Post post = ps.findById(id);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
+            return ps.deletePost(id);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 }
