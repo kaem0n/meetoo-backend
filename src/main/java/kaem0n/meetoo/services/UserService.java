@@ -102,10 +102,20 @@ public class UserService {
         return new GenericResponseDTO("Username successfully changed.");
     }
 
-    public GenericResponseDTO changePassword(UUID id, UserPasswordChangeDTO payload) {
+    public GenericResponseDTO changeMyPassword(UUID id, UserPasswordChangeDTO payload) {
         User found = this.findById(id);
 
         if (bcrypt.matches(found.getPassword(), payload.oldPassword())) found.setPassword(bcrypt.encode(payload.newPassword()));
+
+        ud.save(found);
+
+        return new GenericResponseDTO("Password successfully changed.");
+    }
+
+    public GenericResponseDTO changePassword(UUID id, AdminPasswordChangeDTO payload) {
+        User found = this.findById(id);
+
+        found.setPassword(bcrypt.encode(payload.newPassword()));
 
         ud.save(found);
 
