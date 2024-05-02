@@ -32,9 +32,10 @@ public class CommentController {
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Comment createComment(@Validated @RequestBody CommentCreationDTO payload,
                                  @RequestParam(value = "image", required = false) MultipartFile img,
-                                 BindingResult validation) throws IOException {
+                                 BindingResult validation,
+                                 @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else return cs.createComment(payload, img);
+        else return cs.createComment(currentAuthenticatedUser.getId(), payload, img);
     }
 
     @GetMapping("/{id}")

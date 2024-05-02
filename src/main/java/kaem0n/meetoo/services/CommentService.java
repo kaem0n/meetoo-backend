@@ -26,11 +26,11 @@ public class CommentService {
     @Autowired
     private Cloudinary c;
 
-    public Comment createComment(CommentCreationDTO payload, MultipartFile img) throws IOException {
-        if (img == null) return cd.save(new Comment(payload.content(), us.findById(UUID.fromString(payload.userID())), ps.findById(UUID.fromString(payload.postID()))));
+    public Comment createComment(UUID userID, CommentCreationDTO payload, MultipartFile img) throws IOException {
+        if (img == null) return cd.save(new Comment(payload.content(), us.findById(userID), ps.findById(UUID.fromString(payload.postID()))));
         else {
             String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
-            return cd.save(new Comment(payload.content(), url, us.findById(UUID.fromString(payload.userID())), ps.findById(UUID.fromString(payload.postID()))));
+            return cd.save(new Comment(payload.content(), url, us.findById(userID), ps.findById(UUID.fromString(payload.postID()))));
         }
     }
 

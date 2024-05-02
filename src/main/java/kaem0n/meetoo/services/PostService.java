@@ -34,15 +34,15 @@ public class PostService {
         return bd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public Post createPost(PostCreationDTO payload, List<MultipartFile> files) throws IOException {
-        if (files == null) return pd.save(new Post(payload.content(), us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
+    public Post createPost(UUID userID, PostCreationDTO payload, List<MultipartFile> files) throws IOException {
+        if (files == null) return pd.save(new Post(payload.content(), us.findById(userID), this.findBoard(UUID.fromString(payload.boardID()))));
         else {
             List<String> mediaUrls = new ArrayList<>();
             for (MultipartFile file : files) {
                 String url = (String) c.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
                 mediaUrls.add(url);
             }
-            return pd.save(new Post(payload.content(), mediaUrls, us.findById(UUID.fromString(payload.userID())), this.findBoard(UUID.fromString(payload.boardID()))));
+            return pd.save(new Post(payload.content(), mediaUrls, us.findById(userID), this.findBoard(UUID.fromString(payload.boardID()))));
         }
     }
 

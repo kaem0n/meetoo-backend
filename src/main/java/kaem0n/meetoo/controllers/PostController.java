@@ -39,9 +39,10 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     public Post createPost(@Validated @RequestBody PostCreationDTO payload,
                            @RequestParam(value = "media", required = false) List<MultipartFile> files,
-                           BindingResult validation) throws IOException {
+                           BindingResult validation,
+                           @AuthenticationPrincipal User currentAuthenticatedUserUser) throws IOException {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else return ps.createPost(payload, files);
+        else return ps.createPost(currentAuthenticatedUserUser.getId(), payload, files);
     }
 
     @PatchMapping("/{id}")
