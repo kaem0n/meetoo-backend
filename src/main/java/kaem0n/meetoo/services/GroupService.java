@@ -6,8 +6,7 @@ import kaem0n.meetoo.entities.GroupMembership;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
-import kaem0n.meetoo.payloads.group.GroupCreationDTO;
-import kaem0n.meetoo.payloads.group.GroupInfoUpdateDTO;
+import kaem0n.meetoo.payloads.group.GroupDTO;
 import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.GroupDAO;
 import kaem0n.meetoo.repositories.GroupMembershipDAO;
@@ -27,10 +26,10 @@ public class GroupService {
     @Autowired
     private GroupMembershipDAO gmd;
 
-    public Group createGroup(GroupCreationDTO payload) {
-        User founder = us.findById(UUID.fromString(payload.founderID()));
+    public Group createGroup(UUID userID, GroupDTO payload) {
+        User founder = us.findById(userID);
         Group newGroup = gd.save(new Group(payload.name(), payload.description(), founder));
-        GroupMembership founderMembership = gmd.save(new GroupMembership(founder, newGroup));
+        gmd.save(new GroupMembership(founder, newGroup));
         Board board = bd.save(new Board());
         newGroup.setBoard(board);
 
@@ -41,7 +40,14 @@ public class GroupService {
         return gd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public Group updateGroup(UUID id, GroupInfoUpdateDTO payload) {
+    public GroupMembership findUserMembership(UUID userID, UUID groupID) {
+        User user = us.findById(userID);
+        Group group = this.findById(groupID);
+        return gmd.findByUserAndGroup(user, group)
+                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
+    }
+
+    public Group updateGroup(UUID id, GroupDTO payload) {
         Group found = this.findById(id);
 
         found.setName(payload.name());
@@ -59,36 +65,24 @@ public class GroupService {
         return new GenericResponseDTO("Group ID '" + id + "' deleted successfully.");
     }
 
-    public GenericResponseDTO handlePromotion(UUID founderID, UUID userID, UUID groupID) {
-        User founder = us.findById(founderID);
+    public GenericResponseDTO handlePromotion(UUID userID, UUID groupID) {
         User user = us.findById(userID);
-        Group group = this.findById(groupID);
-        GroupMembership userMembership = gmd.findByUserAndGroup(user, group)
-                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
+        GroupMembership userMembership = this.findUserMembership(userID, groupID);
 
-        if (founder == group.getFounder()) {
-            userMembership.setAdmin(!userMembership.isAdmin());
-            gmd.save(userMembership);
-        }
+        userMembership.setAdmin(!userMembership.isAdmin());
+        gmd.save(userMembership);
 
         if (userMembership.isAdmin()) return new GenericResponseDTO(user.getUsername() + " has been promoted to role 'Admin'.");
         else return new GenericResponseDTO(user.getUsername() + " has been degraded to role 'Member'.");
     }
 
-    public GenericResponseDTO handleBan(UUID adminID, UUID userID, UUID groupID) {
-        User admin = us.findById(adminID);
+    public GenericResponseDTO handleBan(UUID userID, UUID groupID) {
         User user = us.findById(userID);
-        Group group = this.findById(groupID);
-        GroupMembership userMembership = gmd.findByUserAndGroup(user, group)
-                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
-        GroupMembership adminMembership = gmd.findByUserAndGroup(admin, group)
-                .orElseThrow(() -> new NotFoundException(admin.getUsername() + " is not a member of " + group.getName() + " group."));
+        GroupMembership userMembership = this.findUserMembership(userID, groupID);
 
-        if (adminMembership.isAdmin()) {
-            userMembership.setAdmin(false);
-            userMembership.setBanned(!userMembership.isBanned());
-            gmd.save(userMembership);
-        }
+        userMembership.setAdmin(false);
+        userMembership.setBanned(!userMembership.isBanned());
+        gmd.save(userMembership);
 
         if (userMembership.isBanned()) return new GenericResponseDTO(user.getUsername() + " has been banned from the group.");
         else return new GenericResponseDTO(user.getUsername() + " has been unbanned from the group.");
@@ -97,16 +91,14 @@ public class GroupService {
     public GenericResponseDTO joinGroup(UUID userID, UUID groupID) {
         User user = us.findById(userID);
         Group group = this.findById(groupID);
-        GroupMembership userMembership = gmd.save(new GroupMembership(user, group));
+        gmd.save(new GroupMembership(user, group));
 
         return new GenericResponseDTO("You are now a member of the group " + group.getName() + ".");
     }
 
     public GenericResponseDTO leaveGroup(UUID userID, UUID groupID) {
-        User user = us.findById(userID);
         Group group = this.findById(groupID);
-        GroupMembership userMembership = gmd.findByUserAndGroup(user, group)
-                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
+        GroupMembership userMembership = this.findUserMembership(userID, groupID);
 
         if (!userMembership.isBanned()) gmd.delete(userMembership);
 
@@ -114,10 +106,8 @@ public class GroupService {
     }
 
     public GenericResponseDTO handleFollow(UUID userID, UUID groupID) {
-        User user = us.findById(userID);
         Group group = this.findById(groupID);
-        GroupMembership userMembership = gmd.findByUserAndGroup(user, group)
-                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
+        GroupMembership userMembership = this.findUserMembership(userID, groupID);
 
         userMembership.setFollowing(!userMembership.isFollowing());
         gmd.save(userMembership);

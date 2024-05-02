@@ -1,12 +1,19 @@
 package kaem0n.meetoo.controllers;
 
 import kaem0n.meetoo.entities.Group;
+import kaem0n.meetoo.entities.User;
+import kaem0n.meetoo.enums.UserPermissions;
+import kaem0n.meetoo.exceptions.BadRequestException;
+import kaem0n.meetoo.exceptions.UnauthorizedException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
-import kaem0n.meetoo.payloads.group.GroupCreationDTO;
-import kaem0n.meetoo.payloads.group.GroupInfoUpdateDTO;
+import kaem0n.meetoo.payloads.group.GroupDTO;
 import kaem0n.meetoo.services.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -18,49 +25,87 @@ public class GroupController {
     private GroupService gs;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Group findById(@PathVariable UUID id) {
         return gs.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Group createGroup(GroupCreationDTO payload) {
-        return gs.createGroup(payload);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Group createGroup(@AuthenticationPrincipal User currentAuthenticatedUser,
+                             @Validated @RequestBody GroupDTO payload,
+                             BindingResult validation) {
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else return gs.createGroup(currentAuthenticatedUser.getId(), payload);
     }
 
     @PutMapping("/{id}")
-    public Group updateGroup(@PathVariable UUID id, @RequestBody GroupInfoUpdateDTO payload) {
-        return gs.updateGroup(id, payload);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Group updateGroup(@PathVariable UUID id,
+                             @Validated @RequestBody GroupDTO payload,
+                             BindingResult validation,
+                             @AuthenticationPrincipal User currentAuthenticatedUser) {
+        Group group = gs.findById(id);
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                currentAuthenticatedUser == group.getFounder() ||
+                gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
+            return gs.updateGroup(id, payload);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public GenericResponseDTO deleteGroup(@PathVariable UUID id) {
-        return gs.deleteGroup(id);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO deleteGroup(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+        Group group = gs.findById(id);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                currentAuthenticatedUser == group.getFounder()) {
+            return gs.deleteGroup(id);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @PatchMapping("/{groupID}/promote")
-    public GenericResponseDTO handlePromotion(@RequestParam UUID founderID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.handlePromotion(founderID, userID, groupID);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO handlePromotion(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                              @RequestParam UUID userID,
+                                              @PathVariable UUID groupID) {
+        Group group = gs.findById(groupID);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                currentAuthenticatedUser == group.getFounder()) {
+            return gs.handlePromotion(userID, groupID);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @PatchMapping("/{groupID}/ban")
-    public GenericResponseDTO handleBan(@RequestParam UUID adminID, @RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.handleBan(adminID, userID, groupID);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO handleBan(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                        @RequestParam UUID userID,
+                                        @PathVariable UUID groupID) {
+        Group group = gs.findById(groupID);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                currentAuthenticatedUser == group.getFounder() ||
+                gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
+            return gs.handleBan(userID, groupID);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @PatchMapping("/{groupID}/join")
-    public GenericResponseDTO joinGroup(@RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.joinGroup(userID, groupID);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO joinGroup(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
+        return gs.joinGroup(currentAuthenticatedUser.getId(), groupID);
     }
 
     @PatchMapping("/{groupID}/leave")
-    public GenericResponseDTO leaveGroup(@RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.leaveGroup(userID, groupID);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO leaveGroup(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
+        return gs.leaveGroup(currentAuthenticatedUser.getId(), groupID);
     }
 
     @PatchMapping("/{groupID}/follow")
-    public GenericResponseDTO handleFollow(@RequestParam UUID userID, @PathVariable UUID groupID) {
-        return gs.handleFollow(userID, groupID);
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO handleFollow(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
+        return gs.handleFollow(currentAuthenticatedUser.getId(), groupID);
     }
 }
