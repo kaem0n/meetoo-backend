@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,12 +27,14 @@ public class UserService {
     private UserDAO ud;
     @Autowired
     private BoardDAO bd;
+    @Autowired
+    private PasswordEncoder bcrypt;
 
     public User register(UserRegistrationDTO payload) {
         if (ud.existsByEmail(payload.email())) throw new BadRequestException("Email " + payload.email() + " is already being used.");
         else if (ud.existsByUsername(payload.username())) throw new BadRequestException("Username " + payload.username() + " is not available.");
         else {
-            User newUser = ud.save(new User(payload.email(), payload.username(), payload.password()));
+            User newUser = ud.save(new User(payload.email(), payload.username(), bcrypt.encode(payload.password())));
             Board board = bd.save(new Board());
             newUser.setBoard(board);
             return ud.save(newUser);
@@ -88,7 +91,7 @@ public class UserService {
     public GenericResponseDTO changePassword(UUID id, UserPasswordChangeDTO payload) {
         User found = this.findById(id);
 
-        if (Objects.equals(found.getPassword(), payload.oldPassword())) found.setPassword(payload.newPassword());
+        if (Objects.equals(bcrypt.encode(found.getPassword()), bcrypt.encode(payload.oldPassword()))) found.setPassword(bcrypt.encode(payload.newPassword()));
 
         ud.save(found);
 
