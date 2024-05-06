@@ -1,5 +1,6 @@
 package kaem0n.meetoo.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,5 +22,6 @@ public class Board {
     @Setter(AccessLevel.NONE)
     private UUID id;
     @OneToMany(mappedBy = "board")
+    @JsonIgnore
     private List<Post> posts;
 }

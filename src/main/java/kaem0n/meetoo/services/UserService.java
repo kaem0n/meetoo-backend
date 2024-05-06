@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -139,5 +141,9 @@ public class UserService {
 
         if (!found.isAccountNonLocked()) return new GenericResponseDTO("User ID '" + id + "' account permanently banned from the platform.");
         else return new GenericResponseDTO("User ID '" + id + "' account account lock has been lifted.");
+    }
+
+    public List<User> findBySearchQuery(String query) {
+        return ud.searchUsers(query);
     }
 }
