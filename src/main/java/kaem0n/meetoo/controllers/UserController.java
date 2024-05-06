@@ -72,6 +72,12 @@ public class UserController {
         return us.changePassword(id, payload);
     }
 
+    @PatchMapping("/{id}/ban")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public GenericResponseDTO handlePlatformBan(@PathVariable UUID id) {
+        return us.handlePlatformBan(id);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ADMIN')")

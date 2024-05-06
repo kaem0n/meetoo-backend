@@ -130,4 +130,14 @@ public class UserService {
 
         return new GenericResponseDTO("User ID '" + id + "' account permanently deleted.");
     }
+
+    public GenericResponseDTO handlePlatformBan(UUID id) {
+        User found = this.findById(id);
+
+        found.setAccountNonLocked(!found.isAccountNonLocked());
+        ud.save(found);
+
+        if (!found.isAccountNonLocked()) return new GenericResponseDTO("User ID '" + id + "' account permanently banned from the platform.");
+        else return new GenericResponseDTO("User ID '" + id + "' account account lock has been lifted.");
+    }
 }
