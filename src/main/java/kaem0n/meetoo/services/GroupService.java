@@ -13,6 +13,7 @@ import kaem0n.meetoo.repositories.GroupMembershipDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,7 +45,7 @@ public class GroupService {
         User user = us.findById(userID);
         Group group = this.findById(groupID);
         return gmd.findByUserAndGroup(user, group)
-                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of " + group.getName() + " group."));
+                .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of '" + group.getName() + "' group."));
     }
 
     public Group updateGroup(UUID id, GroupDTO payload) {
@@ -91,9 +92,13 @@ public class GroupService {
     public GenericResponseDTO joinGroup(UUID userID, UUID groupID) {
         User user = us.findById(userID);
         Group group = this.findById(groupID);
+        List<GroupMembership> userMemberships = user.getMemberships();
+        for (GroupMembership membership : userMemberships) {
+            if (membership.getGroup().getId() == groupID) return new GenericResponseDTO("You are already member of this group.");
+        }
         gmd.save(new GroupMembership(user, group));
 
-        return new GenericResponseDTO("You are now a member of the group " + group.getName() + ".");
+        return new GenericResponseDTO("You are now a member of the group '" + group.getName() + "'.");
     }
 
     public GenericResponseDTO leaveGroup(UUID userID, UUID groupID) {
@@ -102,7 +107,7 @@ public class GroupService {
 
         if (!userMembership.isBanned()) gmd.delete(userMembership);
 
-        return new GenericResponseDTO("You have left the group " + group.getName() + ".");
+        return new GenericResponseDTO("You have left the group '" + group.getName() + "'.");
     }
 
     public GenericResponseDTO handleFollow(UUID userID, UUID groupID) {
@@ -112,7 +117,11 @@ public class GroupService {
         userMembership.setFollowing(!userMembership.isFollowing());
         gmd.save(userMembership);
 
-        if (userMembership.isFollowing()) return new GenericResponseDTO("You are now following the group " + group.getName() + ".");
-        else return new GenericResponseDTO("You are no longer following the group " + group.getName() + ".");
+        if (userMembership.isFollowing()) return new GenericResponseDTO("You are now following the group '" + group.getName() + "'.");
+        else return new GenericResponseDTO("You are no longer following the group '" + group.getName() + "'.");
+    }
+
+    public List<Group> findBySearchQuery(String query) {
+        return gd.findByNameContainingIgnoreCase(query);
     }
 }

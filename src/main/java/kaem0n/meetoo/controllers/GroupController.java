@@ -91,19 +91,19 @@ public class GroupController {
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
-    @PatchMapping("/{groupID}/join")
+    @PostMapping("/{groupID}/join")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public GenericResponseDTO joinGroup(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
         return gs.joinGroup(currentAuthenticatedUser.getId(), groupID);
     }
 
-    @PatchMapping("/{groupID}/leave")
+    @PostMapping("/{groupID}/leave")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public GenericResponseDTO leaveGroup(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
         return gs.leaveGroup(currentAuthenticatedUser.getId(), groupID);
     }
 
-    @PatchMapping("/{groupID}/follow")
+    @PostMapping("/{groupID}/follow")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public GenericResponseDTO handleFollow(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID groupID) {
         return gs.handleFollow(currentAuthenticatedUser.getId(), groupID);

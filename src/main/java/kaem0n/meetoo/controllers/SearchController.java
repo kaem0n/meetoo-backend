@@ -1,8 +1,9 @@
 package kaem0n.meetoo.controllers;
 
+import kaem0n.meetoo.entities.Group;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.payloads.search.SearchResultsDTO;
-import kaem0n.meetoo.repositories.UserDAO;
+import kaem0n.meetoo.services.GroupService;
 import kaem0n.meetoo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,13 +19,15 @@ import java.util.List;
 public class SearchController {
     @Autowired
     private UserService us;
+    @Autowired
+    private GroupService gs;
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public SearchResultsDTO search(@RequestParam String query) {
         List<User> foundUsers = us.findBySearchQuery(query);
-        System.out.println(foundUsers);
+        List<Group> foundGroups = gs.findBySearchQuery(query);
 
-        return new SearchResultsDTO(foundUsers, null);
+        return new SearchResultsDTO(foundUsers, foundGroups);
     }
 }
