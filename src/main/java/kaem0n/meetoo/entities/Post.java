@@ -18,6 +18,7 @@ import java.util.UUID;
 public class Post {
     @Id
     @Column(name = "post_id")
+    @GeneratedValue
     @Setter(AccessLevel.NONE)
     private UUID id;
     @Column(columnDefinition = "text")

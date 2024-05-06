@@ -20,6 +20,7 @@ import java.util.UUID;
 public class Comment {
     @Id
     @Column(name = "comment_id")
+    @GeneratedValue
     @Setter(AccessLevel.NONE)
     private UUID id;
     @Column(columnDefinition = "text")

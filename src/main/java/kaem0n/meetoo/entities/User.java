@@ -27,6 +27,7 @@ import java.util.UUID;
 public class User implements UserDetails {
     @Id
     @Column(name = "user_id")
+    @GeneratedValue
     @Setter(AccessLevel.NONE)
     private UUID id;
     private String email;
@@ -55,6 +56,7 @@ public class User implements UserDetails {
     private List<Comment> likedComments;
     @ManyToMany(mappedBy = "postLikes")
     private List<Post> likedPosts;
+    private boolean accountNonLocked;
 
     public User(String email, String username, String password) {
         this.email = email;
@@ -64,6 +66,7 @@ public class User implements UserDetails {
         this.registration = LocalDate.now();
         this.proPicUrl = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
         this.gender = UserGender.UNDEFINED;
+        this.accountNonLocked = true;
     }
 
     @Override
@@ -78,7 +81,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return accountNonLocked;
     }
 
     @Override

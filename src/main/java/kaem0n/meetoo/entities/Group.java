@@ -20,6 +20,7 @@ import java.util.UUID;
 public class Group {
     @Id
     @Column(name = "group_id")
+    @GeneratedValue
     @Setter(AccessLevel.NONE)
     private UUID id;
     private String name;

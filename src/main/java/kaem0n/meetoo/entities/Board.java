@@ -17,6 +17,7 @@ import java.util.UUID;
 public class Board {
     @Id
     @Column(name = "board_id")
+    @GeneratedValue
     @Setter(AccessLevel.NONE)
     private UUID id;
     @OneToMany(mappedBy = "board")
