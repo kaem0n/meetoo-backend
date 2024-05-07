@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -52,7 +53,8 @@ public class CommentController {
                                       @AuthenticationPrincipal User currentAuthenticatedUser) {
         Comment comment = cs.findById(id);
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == comment.getUser()) {
+        else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
+                || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
             return cs.editCommentContent(id, payload);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
@@ -63,7 +65,8 @@ public class CommentController {
                                     @RequestParam("image") MultipartFile img,
                                     @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         Comment comment = cs.findById(id);
-        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == comment.getUser()) {
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
+                || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
             return cs.editCommentImage(id, img);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
@@ -73,7 +76,8 @@ public class CommentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public GenericResponseDTO deleteComment(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Comment comment = cs.findById(id);
-        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == comment.getUser()) {
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
+                || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
             return cs.deleteComment(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }

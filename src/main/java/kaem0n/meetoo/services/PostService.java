@@ -34,16 +34,8 @@ public class PostService {
         return bd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public Post createPost(UUID userID, PostCreationDTO payload, List<MultipartFile> files) throws IOException {
-        if (files == null) return pd.save(new Post(payload.content(), us.findById(userID), this.findBoard(UUID.fromString(payload.boardID()))));
-        else {
-            List<String> mediaUrls = new ArrayList<>();
-            for (MultipartFile file : files) {
-                String url = (String) c.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
-                mediaUrls.add(url);
-            }
-            return pd.save(new Post(payload.content(), mediaUrls, us.findById(userID), this.findBoard(UUID.fromString(payload.boardID()))));
-        }
+    public Post createPost(UUID userID, PostCreationDTO payload) {
+        return pd.save(new Post(payload.content(), us.findById(userID), this.findBoard(UUID.fromString(payload.boardID()))));
     }
 
     public Post findById(UUID id) {
@@ -58,7 +50,7 @@ public class PostService {
         return pd.save(found);
     }
 
-    public Post editPostMedia(UUID id, List<MultipartFile> files) throws IOException {
+    public Post addMedia(UUID id, List<MultipartFile> files) throws IOException {
         Post found = this.findById(id);
 
         List<String> mediaUrls = new ArrayList<>();
@@ -67,7 +59,8 @@ public class PostService {
             mediaUrls.add(url);
         }
 
-        found.setMediaUrls(mediaUrls);
+        if (found.getMediaUrls() != null) found.getMediaUrls().addAll(mediaUrls);
+        else found.setMediaUrls(mediaUrls);
 
         return pd.save(found);
     }
@@ -78,5 +71,10 @@ public class PostService {
         pd.delete(found);
 
         return new GenericResponseDTO("Post ID '" + id + "' successfully deleted.");
+    }
+
+    public List<Post> findBySearchQuery(String query) {
+        if (query.startsWith("#")) return pd.findByHashtag(query.replace("#", ""));
+        else return pd.findByHashtag(query);
     }
 }

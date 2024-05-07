@@ -16,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -49,7 +50,7 @@ public class GroupController {
         Group group = gs.findById(id);
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
         else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
-                currentAuthenticatedUser == group.getFounder() ||
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
                 gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
             return gs.updateGroup(id, payload);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
@@ -61,7 +62,7 @@ public class GroupController {
     public GenericResponseDTO deleteGroup(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Group group = gs.findById(id);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
-                currentAuthenticatedUser == group.getFounder()) {
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString())) {
             return gs.deleteGroup(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
@@ -73,7 +74,7 @@ public class GroupController {
                                               @PathVariable UUID groupID) {
         Group group = gs.findById(groupID);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
-                currentAuthenticatedUser == group.getFounder()) {
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString())) {
             return gs.handlePromotion(userID, groupID);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
@@ -85,7 +86,7 @@ public class GroupController {
                                         @PathVariable UUID groupID) {
         Group group = gs.findById(groupID);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
-                currentAuthenticatedUser == group.getFounder() ||
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
                 gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
             return gs.handleBan(userID, groupID);
         } else throw new UnauthorizedException("Invalid request: not authorized.");

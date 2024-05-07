@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -34,15 +35,14 @@ public class PostController {
         return ps.findById(id);
     }
 
-    @PostMapping("/media")
+    @PostMapping
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public Post createPost(@Validated @RequestBody PostCreationDTO payload,
-                           @RequestParam(value = "media", required = false) List<MultipartFile> files,
                            BindingResult validation,
-                           @AuthenticationPrincipal User currentAuthenticatedUserUser) throws IOException {
+                           @AuthenticationPrincipal User currentAuthenticatedUserUser) {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else return ps.createPost(currentAuthenticatedUserUser.getId(), payload, files);
+        else return ps.createPost(currentAuthenticatedUserUser.getId(), payload);
     }
 
     @PatchMapping("/{id}")
@@ -53,19 +53,21 @@ public class PostController {
                                 @AuthenticationPrincipal User currentAuthenticatedUser) {
         Post post = ps.findById(id);
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
+        else if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
+                || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
             return ps.editPostContent(id, payload);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
     @PatchMapping("/{id}/media")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
-    public Post editPostMedia(@PathVariable UUID id,
-                              @RequestParam("media") List<MultipartFile> files,
-                              @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+    public Post addMedia(@PathVariable UUID id,
+                         @RequestParam("media") List<MultipartFile> files,
+                         @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         Post post = ps.findById(id);
-        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
-            return ps.editPostMedia(id, files);
+        if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
+                || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
+            return ps.addMedia(id, files);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
@@ -74,7 +76,8 @@ public class PostController {
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public GenericResponseDTO deletePost(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Post post = ps.findById(id);
-        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN || currentAuthenticatedUser == post.getUser()) {
+        if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
+                || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
             return ps.deletePost(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
