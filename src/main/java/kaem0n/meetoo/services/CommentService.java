@@ -3,6 +3,7 @@ package kaem0n.meetoo.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Comment;
+import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.comment.CommentContentEditDTO;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -63,5 +65,30 @@ public class CommentService {
     public List<Comment> findBySearchQuery(String query) {
         if (query.startsWith("#")) return cd.findByHashtag(query.replace("#", ""));
         else return cd.findByHashtag(query);
+    }
+
+    public GenericResponseDTO likeAComment(UUID userID, UUID commentID) {
+        User user = us.findById(userID);
+        Comment comment = this.findById(commentID);
+        List<User> likes = comment.getCommentLikes();
+        boolean likeCheck = false;
+
+        for(User userLike : likes) {
+            if (Objects.equals(userLike.getId().toString(), user.getId().toString())) {
+                likeCheck = true;
+                break;
+            }
+        }
+
+        if (likeCheck) {
+            likes.remove(user);
+            cd.save(comment);
+            return new GenericResponseDTO("Like removed.");
+        }
+        else {
+            likes.add(user);
+            cd.save(comment);
+            return new GenericResponseDTO("Like added.");
+        }
     }
 }

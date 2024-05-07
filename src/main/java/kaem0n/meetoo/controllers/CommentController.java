@@ -80,4 +80,10 @@ public class CommentController {
             return cs.deleteComment(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
+
+    @PostMapping("/{id}/like")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO handleLike(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+        return cs.likeAComment(currentAuthenticatedUser.getId(), id);
+    }
 }

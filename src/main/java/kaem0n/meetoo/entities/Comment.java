@@ -1,6 +1,6 @@
 package kaem0n.meetoo.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,7 +15,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "comments")
-@JsonIgnoreProperties({"post", "commentLikes"})
 public class Comment {
     @Id
     @Column(name = "comment_id")
@@ -31,6 +30,7 @@ public class Comment {
     private User user;
     @ManyToOne
     @JoinColumn(name = "post_id")
+    @JsonIgnore
     private Post post;
     @ManyToMany
     @JoinTable(name = "comment_likes",
