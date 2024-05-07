@@ -9,6 +9,7 @@ import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.post.PostContentEditDTO;
 import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.services.PostService;
+import kaem0n.meetoo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,4 +82,11 @@ public class PostController {
             return ps.deletePost(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
+
+    @PostMapping("/{id}/like")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO handleLike(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+        return ps.likeAPost(currentAuthenticatedUser.getId(), id);
+    }
+
 }

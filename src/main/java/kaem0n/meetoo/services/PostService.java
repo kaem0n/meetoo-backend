@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.Post;
+import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.post.PostContentEditDTO;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -76,5 +78,30 @@ public class PostService {
     public List<Post> findBySearchQuery(String query) {
         if (query.startsWith("#")) return pd.findByHashtag(query.replace("#", ""));
         else return pd.findByHashtag(query);
+    }
+
+    public GenericResponseDTO likeAPost(UUID userID, UUID postID) {
+        User user = us.findById(userID);
+        Post post = this.findById(postID);
+        List<User> likes = post.getPostLikes();
+        boolean likeCheck = false;
+
+        for(User userLike : likes) {
+            if (Objects.equals(userLike.getId().toString(), user.getId().toString())) {
+                likeCheck = true;
+                break;
+            }
+        }
+
+        if (likeCheck) {
+            likes.remove(user);
+            pd.save(post);
+            return new GenericResponseDTO("Like removed.");
+        }
+        else {
+            likes.add(user);
+            pd.save(post);
+            return new GenericResponseDTO("Like added.");
+        }
     }
 }
