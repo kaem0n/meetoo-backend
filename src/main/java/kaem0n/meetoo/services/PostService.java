@@ -67,12 +67,8 @@ public class PostService {
         return pd.save(found);
     }
 
-    public GenericResponseDTO deletePost(UUID id) {
-        Post found = this.findById(id);
-
-        pd.delete(found);
-
-        return new GenericResponseDTO("Post ID '" + id + "' successfully deleted.");
+    public void deletePost(UUID id) {
+        pd.delete(this.findById(id));
     }
 
     public List<Post> findBySearchQuery(String query) {

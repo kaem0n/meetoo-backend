@@ -59,11 +59,11 @@ public class GroupController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
-    public GenericResponseDTO deleteGroup(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+    public void deleteGroup(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Group group = gs.findById(id);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
                 Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString())) {
-            return gs.deleteGroup(id);
+            gs.deleteGroup(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

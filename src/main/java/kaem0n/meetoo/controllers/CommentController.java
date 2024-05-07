@@ -73,11 +73,11 @@ public class CommentController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public GenericResponseDTO deleteComment(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+    public void deleteComment(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Comment comment = cs.findById(id);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
                 || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
-            return cs.deleteComment(id);
+            cs.deleteComment(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

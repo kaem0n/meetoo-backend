@@ -37,18 +37,12 @@ public class Comment {
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> commentLikes;
+    private UUID postID;
 
-    // COMMENT WITHOUT IMAGE
     public Comment(String content, User user, Post post) {
         this.content = content;
         this.user = user;
         this.post = post;
-    }
-    // COMMENT WITH IMAGE
-    public Comment(String content, String imageUrl, User user, Post post) {
-        this.content = content;
-        this.imageUrl = imageUrl;
-        this.user = user;
-        this.post = post;
+        this.postID = post.getId();
     }
 }

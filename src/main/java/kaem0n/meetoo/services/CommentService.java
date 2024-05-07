@@ -54,12 +54,8 @@ public class CommentService {
         return cd.save(found);
     }
 
-    public GenericResponseDTO deleteComment(UUID id) {
-        Comment found = this.findById(id);
-
-        cd.delete(found);
-
-        return new GenericResponseDTO("Comment ID '" + id + "' deleted successfully.");
+    public void deleteComment(UUID id) {
+        cd.delete(this.findById(id));
     }
 
     public List<Comment> findBySearchQuery(String query) {

@@ -81,8 +81,8 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public GenericResponseDTO deleteAccount(@PathVariable UUID id) {
-        return us.deleteAccount(id);
+    public void deleteAccount(@PathVariable UUID id) {
+        us.deleteAccount(id);
     }
 
     @GetMapping("/me")
@@ -124,7 +124,7 @@ public class UserController {
 
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public GenericResponseDTO deleteMyAccount(@AuthenticationPrincipal User currentAuthenticatedUser) {
-        return us.deleteAccount(currentAuthenticatedUser.getId());
+    public void deleteMyAccount(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        us.deleteAccount(currentAuthenticatedUser.getId());
     }
 }

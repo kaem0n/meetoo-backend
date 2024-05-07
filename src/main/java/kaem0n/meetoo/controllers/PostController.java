@@ -75,11 +75,11 @@ public class PostController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
-    public GenericResponseDTO deletePost(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
+    public void deletePost(@PathVariable UUID id, @AuthenticationPrincipal User currentAuthenticatedUser) {
         Post post = ps.findById(id);
         if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
                 || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
-            return ps.deletePost(id);
+            ps.deletePost(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

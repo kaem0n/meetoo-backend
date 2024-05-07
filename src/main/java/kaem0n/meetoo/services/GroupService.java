@@ -57,13 +57,11 @@ public class GroupService {
         return gd.save(found);
     }
 
-    public GenericResponseDTO deleteGroup(UUID id) {
+    public void deleteGroup(UUID id) {
         Group found = this.findById(id);
 
         bd.delete(found.getBoard());
         gd.delete(found);
-
-        return new GenericResponseDTO("Group ID '" + id + "' deleted successfully.");
     }
 
     public GenericResponseDTO handlePromotion(UUID userID, UUID groupID) {

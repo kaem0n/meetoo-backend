@@ -123,13 +123,11 @@ public class UserService {
         return new GenericResponseDTO("Password successfully changed.");
     }
 
-    public GenericResponseDTO deleteAccount(UUID id) {
+    public void deleteAccount(UUID id) {
         User found = this.findById(id);
 
         bd.delete(found.getBoard());
         ud.delete(found);
-
-        return new GenericResponseDTO("User ID '" + id + "' account permanently deleted.");
     }
 
     public GenericResponseDTO handlePlatformBan(UUID id) {
