@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,12 +27,8 @@ public class CommentService {
     @Autowired
     private Cloudinary c;
 
-    public Comment createComment(UUID userID, CommentCreationDTO payload, MultipartFile img) throws IOException {
-        if (img == null) return cd.save(new Comment(payload.content(), us.findById(userID), ps.findById(UUID.fromString(payload.postID()))));
-        else {
-            String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
-            return cd.save(new Comment(payload.content(), url, us.findById(userID), ps.findById(UUID.fromString(payload.postID()))));
-        }
+    public Comment createComment(UUID userID, CommentCreationDTO payload) {
+        return cd.save(new Comment(payload.content(), us.findById(userID), ps.findById(UUID.fromString(payload.postID()))));
     }
 
     public Comment findById(UUID id) {
@@ -46,7 +43,7 @@ public class CommentService {
         return cd.save(found);
     }
 
-    public Comment editCommentImage(UUID id, MultipartFile img) throws IOException {
+    public Comment addImage(UUID id, MultipartFile img) throws IOException {
         Comment found = this.findById(id);
 
         String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
@@ -61,5 +58,10 @@ public class CommentService {
         cd.delete(found);
 
         return new GenericResponseDTO("Comment ID '" + id + "' deleted successfully.");
+    }
+
+    public List<Comment> findBySearchQuery(String query) {
+        if (query.startsWith("#")) return cd.findByHashtag(query.replace("#", ""));
+        else return cd.findByHashtag(query);
     }
 }

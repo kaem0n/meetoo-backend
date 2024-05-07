@@ -1,9 +1,11 @@
 package kaem0n.meetoo.controllers;
 
+import kaem0n.meetoo.entities.Comment;
 import kaem0n.meetoo.entities.Group;
 import kaem0n.meetoo.entities.Post;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.payloads.search.SearchResultsDTO;
+import kaem0n.meetoo.services.CommentService;
 import kaem0n.meetoo.services.GroupService;
 import kaem0n.meetoo.services.PostService;
 import kaem0n.meetoo.services.UserService;
@@ -25,6 +27,8 @@ public class SearchController {
     private GroupService gs;
     @Autowired
     private PostService ps;
+    @Autowired
+    private CommentService cs;
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
@@ -32,6 +36,8 @@ public class SearchController {
         List<User> foundUsers = us.findBySearchQuery(query);
         List<Group> foundGroups = gs.findBySearchQuery(query);
         List<Post> foundPosts = ps.findBySearchQuery(query);
-        return new SearchResultsDTO(foundUsers, foundGroups, foundPosts);
+        List<Comment> foundComments = cs.findBySearchQuery(query);
+
+        return new SearchResultsDTO(foundUsers, foundGroups, foundPosts, foundComments);
     }
 }

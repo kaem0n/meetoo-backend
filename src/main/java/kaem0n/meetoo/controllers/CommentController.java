@@ -28,15 +28,14 @@ public class CommentController {
     @Autowired
     private CommentService cs;
 
-    @PostMapping("/image")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Comment createComment(@Validated @RequestBody CommentCreationDTO payload,
-                                 @RequestParam(value = "image", required = false) MultipartFile img,
                                  BindingResult validation,
-                                 @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+                                 @AuthenticationPrincipal User currentAuthenticatedUser) {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        else return cs.createComment(currentAuthenticatedUser.getId(), payload, img);
+        else return cs.createComment(currentAuthenticatedUser.getId(), payload);
     }
 
     @GetMapping("/{id}")
@@ -61,13 +60,13 @@ public class CommentController {
 
     @PatchMapping("/{id}/image")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
-    public Comment editCommentImage(@PathVariable UUID id,
-                                    @RequestParam("image") MultipartFile img,
-                                    @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+    public Comment addImage(@PathVariable UUID id,
+                            @RequestParam("image") MultipartFile img,
+                            @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         Comment comment = cs.findById(id);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
                 || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
-            return cs.editCommentImage(id, img);
+            return cs.addImage(id, img);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
