@@ -81,9 +81,8 @@ public class PostService {
         else {
             c.uploader().destroy(mediaID, ObjectUtils.emptyMap());
             urls.remove(toDelete);
+            return pd.save(found);
         }
-
-        return pd.save(found);
     }
 
     public void deletePost(UUID id) {

@@ -58,7 +58,7 @@ public class CommentController {
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
-    @PatchMapping("/{id}/image")
+    @PatchMapping("/{id}/addImage")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Comment addImage(@PathVariable UUID id,
                             @RequestParam("image") MultipartFile img,
@@ -67,6 +67,18 @@ public class CommentController {
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
                 || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
             return cs.addImage(id, img);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
+    }
+
+    @PatchMapping("/{commentID}/removeImage/{imageID}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Comment removeImage(@PathVariable UUID commentID,
+                               @PathVariable String imageID,
+                               @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+        Comment comment = cs.findById(commentID);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
+                || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
+            return cs.removeImage(commentID, imageID);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

@@ -54,6 +54,17 @@ public class CommentService {
         return cd.save(found);
     }
 
+    public Comment removeImage(UUID commentID, String imageID) throws IOException {
+        Comment found = this.findById(commentID);
+        String url = found.getImageUrl();
+
+        if (url.contains(imageID)) {
+            c.uploader().destroy(imageID, ObjectUtils.emptyMap());
+            found.setImageUrl("");
+            return cd.save(found);
+        } else throw new NotFoundException("Image not found.");
+    }
+
     public void deleteComment(UUID id) {
         cd.delete(this.findById(id));
     }
