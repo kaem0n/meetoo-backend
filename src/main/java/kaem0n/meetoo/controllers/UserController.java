@@ -144,7 +144,6 @@ public class UserController {
     }
 
     @PatchMapping("/me/removeProPic")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public GenericResponseDTO removeMyProPic(@AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         return us.removeProPic(currentAuthenticatedUser.getId());
     }

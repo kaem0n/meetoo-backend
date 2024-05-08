@@ -1,5 +1,7 @@
 package kaem0n.meetoo.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.Group;
 import kaem0n.meetoo.entities.GroupMembership;
@@ -12,7 +14,9 @@ import kaem0n.meetoo.repositories.GroupDAO;
 import kaem0n.meetoo.repositories.GroupMembershipDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +30,8 @@ public class GroupService {
     private BoardDAO bd;
     @Autowired
     private GroupMembershipDAO gmd;
+    @Autowired
+    private Cloudinary c;
 
     public Group createGroup(UUID userID, GroupDTO payload) {
         User founder = us.findById(userID);
@@ -121,5 +127,35 @@ public class GroupService {
 
     public List<Group> findBySearchQuery(String query) {
         return gd.findByNameContainingIgnoreCase(query);
+    }
+
+    public GenericResponseDTO changeCover(UUID id, MultipartFile img) throws IOException {
+        Group found = this.findById(id);
+        String cover = found.getCoverUrl();
+
+        if (cover == null) {
+            String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
+            found.setCoverUrl(url);
+        } else {
+            String imageID = cover.substring(cover.lastIndexOf("/") + 1, cover.lastIndexOf("."));
+            c.uploader().destroy(imageID, ObjectUtils.emptyMap());
+            String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
+            found.setCoverUrl(url);
+        }
+
+        gd.save(found);
+        return new GenericResponseDTO("Cover has been successfully updated.");
+    }
+
+    public GenericResponseDTO removeCover(UUID id) throws IOException {
+        Group found = this.findById(id);
+        String cover = found.getCoverUrl();
+
+        String imageID = cover.substring(cover.lastIndexOf("/") + 1, cover.lastIndexOf("."));
+        c.uploader().destroy(imageID, ObjectUtils.emptyMap());
+        found.setCoverUrl(null);
+
+        gd.save(found);
+        return new GenericResponseDTO("Cover has been successfully removed.");
     }
 }

@@ -26,6 +26,7 @@ public class Group {
     private String name;
     @Column(columnDefinition = "text")
     private String description;
+    private String coverUrl;
     private LocalDate creation;
     @OneToOne
     @JoinColumn(name = "board_id")

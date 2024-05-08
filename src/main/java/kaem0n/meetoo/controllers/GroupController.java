@@ -15,7 +15,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -51,7 +53,7 @@ public class GroupController {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
         else if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
                 Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
-                gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
+                gs.findUserMembership(currentAuthenticatedUser.getId(), id).isAdmin()) {
             return gs.updateGroup(id, payload);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
@@ -87,8 +89,33 @@ public class GroupController {
         Group group = gs.findById(groupID);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
                 Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
-                gs.findUserMembership(currentAuthenticatedUser.getId(), group.getId()).isAdmin()) {
+                gs.findUserMembership(currentAuthenticatedUser.getId(), groupID).isAdmin()) {
             return gs.handleBan(userID, groupID);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
+    }
+
+    @PatchMapping("/{id}/changeCover")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO changeCover(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                          @PathVariable UUID id,
+                                          @RequestParam("image")MultipartFile img) throws IOException {
+        Group group = gs.findById(id);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
+                gs.findUserMembership(currentAuthenticatedUser.getId(), id).isAdmin()) {
+            return gs.changeCover(id, img);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
+    }
+
+    @PatchMapping("/{id}/removeCover")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GenericResponseDTO removeCover(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                          @PathVariable UUID id) throws IOException {
+        Group group = gs.findById(id);
+        if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN ||
+                Objects.equals(currentAuthenticatedUser.getId().toString(), group.getFounder().getId().toString()) ||
+                gs.findUserMembership(currentAuthenticatedUser.getId(), id).isAdmin()) {
+            return gs.removeCover(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

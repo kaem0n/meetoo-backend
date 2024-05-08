@@ -70,15 +70,14 @@ public class CommentController {
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
-    @PatchMapping("/{commentID}/removeImage/{imageID}")
+    @PatchMapping("/{id}/removeImage")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
-    public Comment removeImage(@PathVariable UUID commentID,
-                               @PathVariable String imageID,
+    public Comment removeImage(@PathVariable UUID id,
                                @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
-        Comment comment = cs.findById(commentID);
+        Comment comment = cs.findById(id);
         if (currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN
                 || Objects.equals(currentAuthenticatedUser.getId().toString(), comment.getUser().getId().toString())) {
-            return cs.removeImage(commentID, imageID);
+            return cs.removeImage(id);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
