@@ -13,7 +13,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -72,6 +74,19 @@ public class UserController {
         return us.changePassword(id, payload);
     }
 
+    @PatchMapping("/{id}/changeProPic")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public GenericResponseDTO changeProPic(@PathVariable UUID id,
+                                           @RequestParam("image") MultipartFile img) throws IOException {
+        return us.changeProPic(id, img);
+    }
+
+    @PatchMapping("/{id}/removeProPic")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public GenericResponseDTO removeProPic(@PathVariable UUID id) throws IOException {
+        return us.removeProPic(id);
+    }
+
     @PatchMapping("/{id}/ban")
     @PreAuthorize("hasAuthority('ADMIN')")
     public GenericResponseDTO handlePlatformBan(@PathVariable UUID id) {
@@ -120,6 +135,18 @@ public class UserController {
                                                BindingResult validation) {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
         return us.changeMyPassword(currentAuthenticatedUser.getId(), payload);
+    }
+
+    @PatchMapping("/me/changeProPic")
+    public GenericResponseDTO changeMyProPic(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                             @RequestParam("image") MultipartFile img) throws IOException {
+        return us.changeProPic(currentAuthenticatedUser.getId(), img);
+    }
+
+    @PatchMapping("/me/removeProPic")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public GenericResponseDTO removeMyProPic(@AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+        return us.removeProPic(currentAuthenticatedUser.getId());
     }
 
     @DeleteMapping("/me")

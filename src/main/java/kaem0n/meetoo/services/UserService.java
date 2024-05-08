@@ -1,5 +1,7 @@
 package kaem0n.meetoo.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.enums.UserGender;
@@ -18,7 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +38,8 @@ public class UserService {
     private PasswordEncoder bcrypt;
     @Autowired
     private JWTTools tools;
+    @Autowired
+    private Cloudinary c;
 
     public User register(UserRegistrationDTO payload) {
         if (ud.existsByEmail(payload.email())) throw new BadRequestException("Email " + payload.email() + " is already being used.");
@@ -142,5 +148,39 @@ public class UserService {
 
     public List<User> findBySearchQuery(String query) {
         return ud.searchUsers(query);
+    }
+
+    public GenericResponseDTO changeProPic(UUID id, MultipartFile img) throws IOException {
+        User found = this.findById(id);
+        String defaultProPic = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
+        String proPic = found.getProPicUrl();
+
+        if (Objects.equals(proPic, defaultProPic)) {
+            String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
+            found.setProPicUrl(url);
+        } else {
+            String imageID = proPic.substring(proPic.lastIndexOf("/") + 1, proPic.lastIndexOf("."));
+            c.uploader().destroy(imageID, ObjectUtils.emptyMap());
+            String url = (String) c.uploader().upload(img.getBytes(), ObjectUtils.emptyMap()).get("url");
+            found.setProPicUrl(url);
+        }
+
+        ud.save(found);
+        return new GenericResponseDTO("Profile picture successfully updated.");
+    }
+
+    public GenericResponseDTO removeProPic(UUID id) throws IOException {
+        User found = this.findById(id);
+        String defaultProPic = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
+        String proPic = found.getProPicUrl();
+
+        if (!Objects.equals(proPic, defaultProPic)) {
+            String imageID = proPic.substring(proPic.lastIndexOf("/") + 1, proPic.lastIndexOf("."));
+            c.uploader().destroy(imageID, ObjectUtils.emptyMap());
+            found.setProPicUrl(defaultProPic);
+
+            ud.save(found);
+            return new GenericResponseDTO("Profile picture successfully removed.");
+        } else throw new NotFoundException("Custom profile picture not found.");
     }
 }
