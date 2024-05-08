@@ -60,7 +60,7 @@ public class PostController {
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 
-    @PatchMapping("/{id}/media")
+    @PatchMapping("/{id}/addMedia")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Post addMedia(@PathVariable UUID id,
                          @RequestParam("media") List<MultipartFile> files,
@@ -69,6 +69,18 @@ public class PostController {
         if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
                 || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
             return ps.addMedia(id, files);
+        } else throw new UnauthorizedException("Invalid request: not authorized.");
+    }
+
+    @PatchMapping("/{postID}/removeMedia/{mediaID}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Post removeMedia(@PathVariable UUID postID,
+                            @PathVariable String mediaID,
+                            @AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
+        Post post = ps.findById(postID);
+        if (Objects.equals(currentAuthenticatedUser.getId().toString(), post.getUser().getId().toString())
+                || currentAuthenticatedUser.getPermissions() == UserPermissions.ADMIN) {
+            return ps.removeMedia(postID, mediaID);
         } else throw new UnauthorizedException("Invalid request: not authorized.");
     }
 

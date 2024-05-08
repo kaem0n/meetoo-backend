@@ -11,6 +11,7 @@ import kaem0n.meetoo.payloads.post.PostContentEditDTO;
 import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.PostDAO;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,6 +64,24 @@ public class PostService {
 
         if (found.getMediaUrls() != null) found.getMediaUrls().addAll(mediaUrls);
         else found.setMediaUrls(mediaUrls);
+
+        return pd.save(found);
+    }
+
+    public Post removeMedia(UUID postID, String mediaID) throws IOException {
+        Post found = this.findById(postID);
+        List<String> urls = found.getMediaUrls();
+        String toDelete = "";
+
+        for (String url : urls) {
+            if (url.contains(mediaID)) toDelete = url;
+        }
+
+        if (toDelete.isEmpty()) throw new NotFoundException("File not found.");
+        else {
+            c.uploader().destroy(mediaID, ObjectUtils.emptyMap());
+            urls.remove(toDelete);
+        }
 
         return pd.save(found);
     }
