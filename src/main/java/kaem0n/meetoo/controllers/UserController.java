@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -148,6 +149,21 @@ public class UserController {
         return us.removeProPic(currentAuthenticatedUser.getId());
     }
 
+    @PostMapping("/me/follow/{id}")
+    public GenericResponseDTO handleFollow(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                           @PathVariable UUID id) {
+        return us.handleFollow(currentAuthenticatedUser.getId(), id);
+    }
+
+    @GetMapping("/me/following")
+    public List<UserEssentialsDTO> getFollowingList(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        return us.getFollowingList(currentAuthenticatedUser.getId());
+    }
+
+    @GetMapping("/me/followedBy")
+    public List<UserEssentialsDTO> getFollowedByList(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        return us.getFollowedByList(currentAuthenticatedUser.getId());
+    }
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMyAccount(@AuthenticationPrincipal User currentAuthenticatedUser) {

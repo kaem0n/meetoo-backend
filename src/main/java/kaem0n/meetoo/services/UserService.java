@@ -197,16 +197,29 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(follower.getUsername() + " doesn't follow " + followed.getUsername() + "."));
     }
 
-    public UserFollow followUser(UUID followerID, UUID followedID) {
-        User follower = this.findById(followerID);
-        User followed = this.findById(followedID);
+    public GenericResponseDTO handleFollow(UUID followerID, UUID followedID) {
+        if (!Objects.equals(followerID.toString(), followedID.toString())) {
+            User follower = this.findById(followerID);
+            User followed = this.findById(followedID);
+            List<UserFollow> follows = follower.getFollowingList();
+            boolean isAlreadyFollowing = false;
 
-        if (!Objects.equals(followerID.toString(), followedID.toString())) return ufd.save(new UserFollow(follower, followed));
-        else throw new BadRequestException("You can't follow yourself.");
-    }
+            for (UserFollow follow : follows) {
+                UUID followedUserID = follow.getFollowed().getId();
+                if (Objects.equals(followedUserID.toString(), followedID.toString())) {
+                    isAlreadyFollowing = true;
+                    break;
+                }
+            }
 
-    public void unfollowUser(UUID followerID, UUID followedID) {
-        ufd.delete(this.findFollow(followerID, followedID));
+            if (isAlreadyFollowing) {
+                ufd.delete(this.findFollow(followerID, followedID));
+                return new GenericResponseDTO("You stopped following " + followed.getUsername() + ".");
+            } else {
+                ufd.save(new UserFollow(follower, followed));
+                return new GenericResponseDTO("You are now following " + followed.getUsername() + ".");
+            }
+        } else throw new BadRequestException("You can't follow yourself.");
     }
 
     public List<UserEssentialsDTO> getFollowingList(UUID id) {
