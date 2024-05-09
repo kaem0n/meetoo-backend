@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@JsonIgnoreProperties({"password", "permissions",  "memberships", "likedComments", "likedPosts",
+@JsonIgnoreProperties({"password", "permissions", "followingList", "followedByList", "memberships", "likedComments", "likedPosts",
         "authorities", "accountNonExpired", "credentialsNonExpired", "accountNonLocked", "enabled"})
 public class User implements UserDetails {
     @Id
@@ -51,7 +51,7 @@ public class User implements UserDetails {
     @JoinColumn(name = "board_id")
     private Board board;
     @OneToMany(mappedBy = "follower")
-    private List<UserFollow> follow;
+    private List<UserFollow> followingList;
     @OneToMany(mappedBy = "followed")
     private List<UserFollow> followedByList;
     @OneToMany(mappedBy = "user")

@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.User;
+import kaem0n.meetoo.entities.UserFollow;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.exceptions.NotFoundException;
@@ -12,6 +13,7 @@ import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.user.*;
 import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.UserDAO;
+import kaem0n.meetoo.repositories.UserFollowDAO;
 import kaem0n.meetoo.security.JWTTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,6 +37,8 @@ public class UserService {
     private UserDAO ud;
     @Autowired
     private BoardDAO bd;
+    @Autowired
+    private UserFollowDAO ufd;
     @Autowired
     private PasswordEncoder bcrypt;
     @Autowired
@@ -182,5 +187,51 @@ public class UserService {
             ud.save(found);
             return new GenericResponseDTO("Profile picture successfully removed.");
         } else throw new NotFoundException("Custom profile picture not found.");
+    }
+
+    public UserFollow findFollow(UUID followerID, UUID followedID) {
+        User follower = this.findById(followerID);
+        User followed = this.findById(followedID);
+
+        return ufd.findByFollowerAndFollowed(follower, followed)
+                .orElseThrow(() -> new NotFoundException(follower.getUsername() + " doesn't follow " + followed.getUsername() + "."));
+    }
+
+    public UserFollow followUser(UUID followerID, UUID followedID) {
+        User follower = this.findById(followerID);
+        User followed = this.findById(followedID);
+
+        if (!Objects.equals(followerID.toString(), followedID.toString())) return ufd.save(new UserFollow(follower, followed));
+        else throw new BadRequestException("You can't follow yourself.");
+    }
+
+    public void unfollowUser(UUID followerID, UUID followedID) {
+        ufd.delete(this.findFollow(followerID, followedID));
+    }
+
+    public List<UserEssentialsDTO> getFollowingList(UUID id) {
+        User found = this.findById(id);
+        List<UserFollow> follows = found.getFollowingList();
+        List<UserEssentialsDTO> followedUsersData = new ArrayList<>();
+
+        for (UserFollow follow : follows) {
+            User followedUser = follow.getFollowed();
+            followedUsersData.add(new UserEssentialsDTO(followedUser.getId(), followedUser.getUsername(), followedUser.getProPicUrl()));
+        }
+
+        return followedUsersData;
+    }
+
+    public List<UserEssentialsDTO> getFollowedByList(UUID id) {
+        User found = this.findById(id);
+        List<UserFollow> follows = found.getFollowedByList();
+        List<UserEssentialsDTO> followerUsersData = new ArrayList<>();
+
+        for (UserFollow follow : follows) {
+            User follower = follow.getFollower();
+            followerUsersData.add(new UserEssentialsDTO(follower.getId(), follower.getUsername(), follower.getProPicUrl()));
+        }
+
+        return followerUsersData;
     }
 }
