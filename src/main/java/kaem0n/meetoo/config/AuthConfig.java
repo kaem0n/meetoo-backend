@@ -37,7 +37,7 @@ public class AuthConfig {
     }
 
     @Bean
-    CorsConfigurationSource ccs(){
+    CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         config.setAllowedMethods(Arrays.asList("*"));
