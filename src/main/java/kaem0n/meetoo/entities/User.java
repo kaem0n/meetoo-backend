@@ -50,6 +50,10 @@ public class User implements UserDetails {
     @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
+    @OneToMany(mappedBy = "follower")
+    private List<UserFollow> follow;
+    @OneToMany(mappedBy = "followed")
+    private List<UserFollow> followedByList;
     @OneToMany(mappedBy = "user")
     private List<GroupMembership> memberships;
     @ManyToMany(mappedBy = "commentLikes")
