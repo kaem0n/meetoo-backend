@@ -68,7 +68,7 @@ public class UserService {
     }
 
     public User findByUsername(String username) {
-        return ud.findByUsername(username).orElseThrow(() -> new NotFoundException("Invalid username."));
+        return ud.findByUsername(username).orElseThrow(() -> new NotFoundException("Invalid credentials, try again."));
     }
 
     public Page<User> findAll(int page, int size, String sort) {
