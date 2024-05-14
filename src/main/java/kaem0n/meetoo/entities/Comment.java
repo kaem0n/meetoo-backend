@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ public class Comment {
     private UUID id;
     @Column(columnDefinition = "text")
     private String content;
+    private LocalDateTime publicationDate;
     @Column(name = "image_url")
     private String imageUrl;
     @ManyToOne
@@ -44,5 +46,6 @@ public class Comment {
         this.user = user;
         this.post = post;
         this.postID = post.getId();
+        this.publicationDate = LocalDateTime.now();
     }
 }

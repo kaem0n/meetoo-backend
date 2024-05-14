@@ -117,7 +117,8 @@ public class UserService {
     public GenericResponseDTO changeMyPassword(UUID id, UserPasswordChangeDTO payload) {
         User found = this.findById(id);
 
-        if (bcrypt.matches(found.getPassword(), payload.oldPassword())) found.setPassword(bcrypt.encode(payload.newPassword()));
+        if (bcrypt.matches(payload.oldPassword(), found.getPassword())) found.setPassword(bcrypt.encode(payload.newPassword()));
+        else throw new BadRequestException("Old password is incorrect.");
 
         ud.save(found);
 
@@ -136,9 +137,10 @@ public class UserService {
 
     public void deleteAccount(UUID id) {
         User found = this.findById(id);
+        Board board = found.getBoard();
 
-        bd.delete(found.getBoard());
         ud.delete(found);
+        bd.delete(board);
     }
 
     public GenericResponseDTO handlePlatformBan(UUID id) {

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ public class Post {
     private UUID id;
     @Column(columnDefinition = "text")
     private String content;
+    private LocalDateTime publicationDate;
     @Column(name = "media_urls")
     private List<String> mediaUrls;
     @ManyToOne
@@ -42,5 +44,6 @@ public class Post {
         this.content = content;
         this.user = user;
         this.board = board;
+        this.publicationDate = LocalDateTime.now();
     }
 }
