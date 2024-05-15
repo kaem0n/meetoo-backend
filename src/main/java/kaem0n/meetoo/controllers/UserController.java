@@ -135,13 +135,21 @@ public class UserController {
                                                @Validated @RequestBody UserPasswordChangeDTO payload,
                                                BindingResult validation) {
         if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
-        return us.changeMyPassword(currentAuthenticatedUser.getId(), payload);
+        else return us.changeMyPassword(currentAuthenticatedUser.getId(), payload);
     }
 
     @PatchMapping("/me/changeProPic")
     public GenericResponseDTO changeMyProPic(@AuthenticationPrincipal User currentAuthenticatedUser,
                                              @RequestParam("image") MultipartFile img) throws IOException {
         return us.changeProPic(currentAuthenticatedUser.getId(), img);
+    }
+
+    @PatchMapping("/me/changeDateFormat")
+    public GenericResponseDTO changeDateFormat(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                               @Validated @RequestBody UserDateFormatChangeDTO payload,
+                                               BindingResult validation) {
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else return us.changeDateFormat(currentAuthenticatedUser.getId(), payload);
     }
 
     @PatchMapping("/me/removeProPic")

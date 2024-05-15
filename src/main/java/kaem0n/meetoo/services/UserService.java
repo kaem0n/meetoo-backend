@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.entities.UserFollow;
+import kaem0n.meetoo.enums.UserDateFormat;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.exceptions.NotFoundException;
@@ -133,6 +134,16 @@ public class UserService {
         ud.save(found);
 
         return new GenericResponseDTO("Password successfully changed.");
+    }
+
+    public GenericResponseDTO changeDateFormat(UUID id, UserDateFormatChangeDTO payload) {
+        User found = this.findById(id);
+
+        found.setDateFormat(UserDateFormat.valueOf(payload.dateFormat()));
+
+        ud.save(found);
+
+        return new GenericResponseDTO("Date format successfully changed.");
     }
 
     public void deleteAccount(UUID id) {

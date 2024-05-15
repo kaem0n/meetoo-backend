@@ -2,6 +2,7 @@ package kaem0n.meetoo.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import kaem0n.meetoo.enums.UserDateFormat;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.enums.UserPermissions;
 import lombok.AccessLevel;
@@ -47,6 +48,8 @@ public class User implements UserDetails {
     @Column(columnDefinition = "text")
     private String bio;
     private List<String> hobbies;
+    @Enumerated(EnumType.STRING)
+    private UserDateFormat dateFormat;
     @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
@@ -70,6 +73,7 @@ public class User implements UserDetails {
         this.registration = LocalDate.now();
         this.proPicUrl = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
         this.gender = UserGender.UNDEFINED;
+        this.dateFormat = UserDateFormat.YMD;
         this.accountNonLocked = true;
     }
 
