@@ -101,6 +101,16 @@ public class UserController {
         us.deleteAccount(id);
     }
 
+    @GetMapping("/{id}/following")
+    public List<UserEssentialsDTO> getFollowingList(@PathVariable UUID id) {
+        return us.getFollowingList(id);
+    }
+
+    @GetMapping("/{id}/followedBy")
+    public List<UserEssentialsDTO> getFollowedByList(@PathVariable UUID id) {
+        return us.getFollowedByList(id);
+    }
+
     @GetMapping("/me")
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return currentAuthenticatedUser;
@@ -164,14 +174,15 @@ public class UserController {
     }
 
     @GetMapping("/me/following")
-    public List<UserEssentialsDTO> getFollowingList(@AuthenticationPrincipal User currentAuthenticatedUser) {
+    public List<UserEssentialsDTO> getMyFollowingList(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return us.getFollowingList(currentAuthenticatedUser.getId());
     }
 
     @GetMapping("/me/followedBy")
-    public List<UserEssentialsDTO> getFollowedByList(@AuthenticationPrincipal User currentAuthenticatedUser) {
+    public List<UserEssentialsDTO> getMyFollowedByList(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return us.getFollowedByList(currentAuthenticatedUser.getId());
     }
+
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMyAccount(@AuthenticationPrincipal User currentAuthenticatedUser) {

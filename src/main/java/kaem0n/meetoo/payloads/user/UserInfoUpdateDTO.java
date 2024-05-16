@@ -17,8 +17,8 @@ public record UserInfoUpdateDTO(@Size(max = 50, message = "Name field length mus
                                 String proPicUrl,
                                 @Pattern(regexp = "MALE|FEMALE|UNDEFINED", message = "Invalid gender value (available: MALE, FEMALE, UNDEFINED).")
                                 String gender,
-                                @Size(max = 50, message = "Occupation field length must not exceed 50 characters.")
+                                @Size(max = 30, message = "Occupation field length must not exceed 30 characters.")
                                 String occupation,
                                 String bio,
-                                List<@Size(min = 3, max = 50, message = "Hobby field length must be between 3 and 50 characters.") String> hobbies) {
+                                List<@Size(min = 3, max = 20, message = "Hobby field length must be between 3 and 20 characters.") String> hobbies) {
 }
