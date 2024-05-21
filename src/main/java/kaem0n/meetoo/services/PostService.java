@@ -13,6 +13,10 @@ import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.PostDAO;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +49,15 @@ public class PostService {
         return pd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
+    public Page<Post> findByBoard(UUID boardID, int page, int size, String sort, String sortDirection) {
+        Board board = this.findBoard(boardID);
+
+        if (size > 50) size = 50;
+        Pageable p = PageRequest.of(page, size, Sort.by(Sort.Direction.valueOf(sortDirection), sort));
+
+        return pd.findByBoard(board, p);
+    }
+
     public Post editPostContent(UUID id, PostContentEditDTO payload) {
         Post found = this.findById(id);
 
@@ -58,7 +71,7 @@ public class PostService {
 
         List<String> mediaUrls = new ArrayList<>();
         for (MultipartFile file : files) {
-            String url = (String) c.uploader().upload(file.getBytes(), ObjectUtils.emptyMap()).get("url");
+            String url = (String) c.uploader().uploadLarge(file.getBytes(), ObjectUtils.emptyMap()).get("url");
             mediaUrls.add(url);
         }
 

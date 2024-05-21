@@ -11,6 +11,7 @@ import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.services.PostService;
 import kaem0n.meetoo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +35,16 @@ public class PostController {
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Post findById(@PathVariable UUID id) {
         return ps.findById(id);
+    }
+
+    @GetMapping("/byBoard/{boardID}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Page<Post> findByBoard(@PathVariable UUID boardID,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
+                                  @RequestParam(defaultValue = "id") String sort,
+                                  @RequestParam(defaultValue = "DESC") String sortDirection) {
+        return ps.findByBoard(boardID, page, size, sort, sortDirection);
     }
 
     @PostMapping

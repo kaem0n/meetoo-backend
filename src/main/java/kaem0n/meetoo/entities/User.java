@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import kaem0n.meetoo.enums.UserDateFormat;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.enums.UserPermissions;
+import kaem0n.meetoo.enums.UserTimeFormat;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,6 +51,8 @@ public class User implements UserDetails {
     private List<String> hobbies;
     @Enumerated(EnumType.STRING)
     private UserDateFormat dateFormat;
+    @Enumerated(EnumType.STRING)
+    private UserTimeFormat timeFormat;
     @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
@@ -74,6 +77,7 @@ public class User implements UserDetails {
         this.proPicUrl = "https://res.cloudinary.com/kaem0n/image/upload/v1714550501/default_user_icon_nm5w0s.png";
         this.gender = UserGender.UNDEFINED;
         this.dateFormat = UserDateFormat.YMD;
+        this.timeFormat = UserTimeFormat.H24;
         this.accountNonLocked = true;
     }
 

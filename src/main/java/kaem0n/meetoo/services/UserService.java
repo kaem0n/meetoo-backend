@@ -7,6 +7,7 @@ import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.entities.UserFollow;
 import kaem0n.meetoo.enums.UserDateFormat;
 import kaem0n.meetoo.enums.UserGender;
+import kaem0n.meetoo.enums.UserTimeFormat;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.exceptions.NotFoundException;
 import kaem0n.meetoo.exceptions.UnauthorizedException;
@@ -144,6 +145,16 @@ public class UserService {
         ud.save(found);
 
         return new GenericResponseDTO("Date format successfully changed.");
+    }
+
+    public GenericResponseDTO changeTimeFormat(UUID id, UserTimeFormatChangeDTO payload) {
+        User found = this.findById(id);
+
+        found.setTimeFormat(UserTimeFormat.valueOf(payload.timeFormat()));
+
+        ud.save(found);
+
+        return new GenericResponseDTO("Time format successfully changed.");
     }
 
     public void deleteAccount(UUID id) {

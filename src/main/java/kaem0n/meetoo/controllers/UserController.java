@@ -162,6 +162,14 @@ public class UserController {
         else return us.changeDateFormat(currentAuthenticatedUser.getId(), payload);
     }
 
+    @PatchMapping("/me/changeTimeFormat")
+    public GenericResponseDTO changeTimeFormat(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                               @Validated @RequestBody UserTimeFormatChangeDTO payload,
+                                               BindingResult validation) {
+        if (validation.hasErrors()) throw new BadRequestException(validation.getAllErrors());
+        else return us.changeTimeFormat(currentAuthenticatedUser.getId(), payload);
+    }
+
     @PatchMapping("/me/removeProPic")
     public GenericResponseDTO removeMyProPic(@AuthenticationPrincipal User currentAuthenticatedUser) throws IOException {
         return us.removeProPic(currentAuthenticatedUser.getId());
