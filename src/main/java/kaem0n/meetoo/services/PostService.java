@@ -3,6 +3,7 @@ package kaem0n.meetoo.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
+import kaem0n.meetoo.entities.Comment;
 import kaem0n.meetoo.entities.Post;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.NotFoundException;
@@ -10,6 +11,7 @@ import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.post.PostContentEditDTO;
 import kaem0n.meetoo.payloads.post.PostCreationDTO;
 import kaem0n.meetoo.repositories.BoardDAO;
+import kaem0n.meetoo.repositories.CommentDAO;
 import kaem0n.meetoo.repositories.PostDAO;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ import java.util.UUID;
 public class PostService {
     @Autowired
     private PostDAO pd;
+    @Autowired
+    private CommentDAO cd;
     @Autowired
     private BoardDAO bd;
     @Autowired
@@ -99,7 +103,11 @@ public class PostService {
     }
 
     public void deletePost(UUID id) {
-        pd.delete(this.findById(id));
+        Post post = this.findById(id);
+        List<Comment> comments = post.getComments();
+
+        for (Comment comment : comments) cd.delete(comment);
+        pd.delete(post);
     }
 
     public List<Post> findBySearchQuery(String query) {
