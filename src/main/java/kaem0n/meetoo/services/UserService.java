@@ -3,6 +3,7 @@ package kaem0n.meetoo.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kaem0n.meetoo.entities.Board;
+import kaem0n.meetoo.entities.GroupMembership;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.entities.UserFollow;
 import kaem0n.meetoo.enums.UserDateFormat;
@@ -270,5 +271,10 @@ public class UserService {
         }
 
         return followerUsersData;
+    }
+
+    public List<GroupMembership> getMemberships(UUID id) {
+        User found = this.findById(id);
+        return found.getMemberships();
     }
 }

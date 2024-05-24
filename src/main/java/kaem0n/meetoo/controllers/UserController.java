@@ -1,5 +1,6 @@
 package kaem0n.meetoo.controllers;
 
+import kaem0n.meetoo.entities.GroupMembership;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
@@ -111,6 +112,11 @@ public class UserController {
         return us.getFollowedByList(id);
     }
 
+    @GetMapping("/{id}/memberships")
+    public List<GroupMembership> getMemberships(@PathVariable UUID id) {
+        return us.getMemberships(id);
+    }
+
     @GetMapping("/me")
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return currentAuthenticatedUser;
@@ -195,5 +201,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMyAccount(@AuthenticationPrincipal User currentAuthenticatedUser) {
         us.deleteAccount(currentAuthenticatedUser.getId());
+    }
+
+    @GetMapping("/me/memberships")
+    public List<GroupMembership> getMyMemberships(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        return us.getMemberships(currentAuthenticatedUser.getId());
     }
 }

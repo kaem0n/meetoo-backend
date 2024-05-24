@@ -13,6 +13,10 @@ import kaem0n.meetoo.repositories.BoardDAO;
 import kaem0n.meetoo.repositories.GroupDAO;
 import kaem0n.meetoo.repositories.GroupMembershipDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,11 +51,26 @@ public class GroupService {
         return gd.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
+    public Page<Group> findByFounder(UUID founderID, int page, int size, String sort) {
+        User founder = us.findById(founderID);
+
+        if (size > 50) size = 50;
+        Pageable p = PageRequest.of(page, size, Sort.by(sort));
+
+        return gd.findByFounder(founder, p);
+    }
+
     public GroupMembership findUserMembership(UUID userID, UUID groupID) {
         User user = us.findById(userID);
         Group group = this.findById(groupID);
         return gmd.findByUserAndGroup(user, group)
                 .orElseThrow(() -> new NotFoundException(user.getUsername() + " is not a member of '" + group.getName() + "' group."));
+    }
+
+    public List<GroupMembership> findGroupMemberships(UUID id) {
+        Group group = this.findById(id);
+
+        return gmd.findByGroup(group);
     }
 
     public Group updateGroup(UUID id, GroupDTO payload) {

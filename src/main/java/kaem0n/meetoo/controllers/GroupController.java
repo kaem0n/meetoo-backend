@@ -1,6 +1,7 @@
 package kaem0n.meetoo.controllers;
 
 import kaem0n.meetoo.entities.Group;
+import kaem0n.meetoo.entities.GroupMembership;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.enums.UserPermissions;
 import kaem0n.meetoo.exceptions.BadRequestException;
@@ -9,6 +10,7 @@ import kaem0n.meetoo.payloads.GenericResponseDTO;
 import kaem0n.meetoo.payloads.group.GroupDTO;
 import kaem0n.meetoo.services.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -31,6 +34,30 @@ public class GroupController {
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public Group findById(@PathVariable UUID id) {
         return gs.findById(id);
+    }
+
+    @GetMapping("/byFounder/{id}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Page<Group> findByFounder(@PathVariable UUID id,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size,
+                                     @RequestParam(defaultValue = "id") String sort) {
+        return gs.findByFounder(id, page, size, sort);
+    }
+
+    @GetMapping("/byFounder/me")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Page<Group> findMyFoundedGroups(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size,
+                                     @RequestParam(defaultValue = "id") String sort) {
+        return gs.findByFounder(currentAuthenticatedUser.getId(), page, size, sort);
+    }
+
+    @GetMapping("/{id}/memberships")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public List<GroupMembership> findGroupMemberships(@PathVariable UUID id) {
+        return gs.findGroupMemberships(id);
     }
 
     @PostMapping
