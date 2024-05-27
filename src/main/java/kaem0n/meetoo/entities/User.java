@@ -53,6 +53,8 @@ public class User implements UserDetails {
     private UserDateFormat dateFormat;
     @Enumerated(EnumType.STRING)
     private UserTimeFormat timeFormat;
+    @Column(nullable = false)
+    private boolean lightTheme;
     @OneToOne
     @JoinColumn(name = "board_id")
     private Board board;
@@ -78,6 +80,7 @@ public class User implements UserDetails {
         this.gender = UserGender.UNDEFINED;
         this.dateFormat = UserDateFormat.YMD;
         this.timeFormat = UserTimeFormat.H24;
+        this.lightTheme = true;
         this.accountNonLocked = true;
     }
 

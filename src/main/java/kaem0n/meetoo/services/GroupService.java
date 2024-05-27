@@ -55,9 +55,14 @@ public class GroupService {
         User founder = us.findById(founderID);
 
         if (size > 50) size = 50;
-        Pageable p = PageRequest.of(page, size, Sort.by(sort));
+        Pageable p = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sort));
 
         return gd.findByFounder(founder, p);
+    }
+
+    public Group findByBoard(UUID boardID) {
+        Board board = bd.findById(boardID).orElseThrow(() -> new NotFoundException("Board ID '" + boardID + "' has not produced results."));
+        return gd.findByBoard(board).orElseThrow(() -> new NotFoundException("Board ID '" + boardID + "' has not produced results."));
     }
 
     public GroupMembership findUserMembership(UUID userID, UUID groupID) {
@@ -84,9 +89,14 @@ public class GroupService {
 
     public void deleteGroup(UUID id) {
         Group found = this.findById(id);
+        Board board = found.getBoard();
+        List<GroupMembership> memberships = gmd.findByGroup(found);
 
-        bd.delete(found.getBoard());
+        for (GroupMembership membership : memberships) {
+            gmd.delete(membership);
+        }
         gd.delete(found);
+        bd.delete(board);
     }
 
     public GenericResponseDTO handlePromotion(UUID userID, UUID groupID) {
@@ -105,6 +115,7 @@ public class GroupService {
         GroupMembership userMembership = this.findUserMembership(userID, groupID);
 
         userMembership.setAdmin(false);
+        userMembership.setFollowing(false);
         userMembership.setBanned(!userMembership.isBanned());
         gmd.save(userMembership);
 

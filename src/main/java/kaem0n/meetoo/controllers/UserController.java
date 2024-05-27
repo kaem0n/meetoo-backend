@@ -1,6 +1,7 @@
 package kaem0n.meetoo.controllers;
 
 import kaem0n.meetoo.entities.GroupMembership;
+import kaem0n.meetoo.entities.Post;
 import kaem0n.meetoo.entities.User;
 import kaem0n.meetoo.exceptions.BadRequestException;
 import kaem0n.meetoo.payloads.GenericResponseDTO;
@@ -30,6 +31,12 @@ public class UserController {
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public User findById(@PathVariable UUID id) {
         return us.findById(id);
+    }
+
+    @GetMapping("/byBoard/{boardID}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public User findByBoard(@PathVariable UUID boardID) {
+        return us.findByBoard(boardID);
     }
 
     @GetMapping
@@ -206,5 +213,18 @@ public class UserController {
     @GetMapping("/me/memberships")
     public List<GroupMembership> getMyMemberships(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return us.getMemberships(currentAuthenticatedUser.getId());
+    }
+
+    @PatchMapping("/me/changeTheme")
+    public GenericResponseDTO changeTheme(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        return us.changeTheme(currentAuthenticatedUser.getId());
+    }
+
+    @GetMapping("/me/homePosts")
+    public Page<Post> getHomepagePosts(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "10") int size,
+                                       @RequestParam(defaultValue = "id") String sort) {
+        return us.getHomepagePosts(currentAuthenticatedUser.getId(), page, size, sort);
     }
 }

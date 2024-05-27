@@ -54,10 +54,23 @@ public class GroupController {
         return gs.findByFounder(currentAuthenticatedUser.getId(), page, size, sort);
     }
 
+    @GetMapping("/byBoard/{boardID}")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public Group findByBoard(@PathVariable UUID boardID) {
+        return gs.findByBoard(boardID);
+    }
+
     @GetMapping("/{id}/memberships")
     @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public List<GroupMembership> findGroupMemberships(@PathVariable UUID id) {
         return gs.findGroupMemberships(id);
+    }
+
+    @GetMapping("/{id}/checkMembership")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
+    public GroupMembership findUserMembership(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                           @PathVariable UUID id) {
+        return gs.findUserMembership(currentAuthenticatedUser.getId(), id);
     }
 
     @PostMapping

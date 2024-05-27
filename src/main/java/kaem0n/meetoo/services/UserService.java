@@ -2,10 +2,7 @@ package kaem0n.meetoo.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import kaem0n.meetoo.entities.Board;
-import kaem0n.meetoo.entities.GroupMembership;
-import kaem0n.meetoo.entities.User;
-import kaem0n.meetoo.entities.UserFollow;
+import kaem0n.meetoo.entities.*;
 import kaem0n.meetoo.enums.UserDateFormat;
 import kaem0n.meetoo.enums.UserGender;
 import kaem0n.meetoo.enums.UserTimeFormat;
@@ -19,20 +16,15 @@ import kaem0n.meetoo.repositories.UserDAO;
 import kaem0n.meetoo.repositories.UserFollowDAO;
 import kaem0n.meetoo.security.JWTTools;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -72,6 +64,11 @@ public class UserService {
 
     public User findByUsername(String username) {
         return ud.findByUsername(username).orElseThrow(() -> new NotFoundException("Invalid credentials, try again."));
+    }
+
+    public User findByBoard(UUID boardID) {
+        Board board = bd.findById(boardID).orElseThrow(() -> new NotFoundException("Board ID '" + boardID + "' has not produced results."));
+        return ud.findByBoard(board).orElseThrow(() -> new NotFoundException("Board ID '" + boardID + "' has not produced results."));
     }
 
     public Page<User> findAll(int page, int size, String sort) {
@@ -164,6 +161,14 @@ public class UserService {
 
         ud.delete(found);
         bd.delete(board);
+    }
+
+    public GenericResponseDTO changeTheme(UUID id) {
+        User found = this.findById((id));
+        found.setLightTheme(!found.isLightTheme());
+
+        ud.save(found);
+        return new GenericResponseDTO("Theme successfully changed.");
     }
 
     public GenericResponseDTO handlePlatformBan(UUID id) {
@@ -276,5 +281,42 @@ public class UserService {
     public List<GroupMembership> getMemberships(UUID id) {
         User found = this.findById(id);
         return found.getMemberships();
+    }
+
+    public Page<Post> getHomepagePosts (UUID id, int page, int size, String sort) {
+        User found = this.findById(id);
+
+
+        List<Post> userPosts = found.getBoard().getPosts();
+
+        List<Board> followedUsersBoards = found.getFollowingList().stream().map(UserFollow::getFollowed).toList()
+                .stream().map(User::getBoard).toList();
+        List<Post> followedUsersPosts = new ArrayList<>();
+        for (Board board : followedUsersBoards) {
+            followedUsersPosts.addAll(board.getPosts());
+        }
+
+        List<Board> followedGroupsBoards = found.getMemberships().stream().filter(GroupMembership::isFollowing)
+                .map(GroupMembership::getGroup).toList()
+                .stream().map(Group::getBoard).toList();
+        List<Post> followedGroupsPosts = new ArrayList<>();
+        for (Board board : followedGroupsBoards) {
+            followedGroupsPosts.addAll(board.getPosts());
+        }
+
+        List<Post> posts = new ArrayList<>();
+        posts.addAll(userPosts);
+        posts.addAll(followedUsersPosts);
+        posts.addAll(followedGroupsPosts);
+
+        List<Post> sortedPosts = posts.stream().sorted(Comparator.comparing(Post::getPublicationDate)
+                        .reversed()).toList();
+
+        if (size > 50) size = 50;
+        Pageable p = PageRequest.of(page, size, Sort.by(sort));
+        int start = Math.min((int)p.getOffset(), sortedPosts.size());
+        int end = Math.min(start + p.getPageSize(), sortedPosts.size());
+
+        return new PageImpl<>(sortedPosts.subList(start, end), p, sortedPosts.size());
     }
 }
